@@ -1,38 +1,39 @@
-# NOTE FROM PIE STAFF
-# This code has not been tested thoroughly on robots; it is meant to be guidance to help improve
-# the code you currently have. It will be tested throughout the week and will be available for you
-# to use during final competition if you are unable to get working code on your testing day.
-# (And yes, it is intentionally hard to use....)
-
 # Device IDs
-MOTOR1_ID = "6_10919479101575700370"
-MOTOR2_ID = "6_7490656656070236256"
+MTR_R = "6_10919479101575700370"
+MTR_L = "6_7490656656070236256"
 
 # Motors
-LEFT_MTR = "a"
-RIGHT_MTR = "b"
+MTR_F = "a"
+MTR_B = "b"
 
-# Controls (change these to your preferences)
-FORWARD = "w"
-BACK = "s"
-LEFT = "a"
-RIGHT = "d"
-
+# Placeholder autonomous code, drive in a loop
 def autonomous():
-    Robot.set_value(MOTOR1_ID, "velocity_" + LEFT_MTR, 1.0)
-    Robot.set_value(MOTOR2_ID, "velocity_" + RIGHT_MTR, -1.0)
+    while True:
+        apply_z_velocity(1.0)
+        apply_x_velocity(1.0)
+        Robot.sleep(0.5)
+        apply_z_velocity(-1.0)
+        apply_x_velocity(1.0)
+        Robot.sleep(0.5)
+        apply_z_velocity(-1.0)
+        apply_x_velocity(-1.0)
+        Robot.sleep(0.5)
+        apply_z_velocity(1.0)
+        apply_x_velocity(-1.0)
+        Robot.sleep(0.5)
+
+# 1.0: full forward, -1.0: full backward
+def apply_z_velocity(value):
+    Robot.set_value(MTR_L, "velocity_" + MTR_F, value * 1.0)
+    Robot.set_value(MTR_R, "velocity_" + MTR_B, value * -1.0)
+
+
+# 1.0: full right, -1.0: full left
+def apply_x_velocity(value):
+    Robot.set_value(MTR_L, "velocity_" + MTR_B, value * 1.0)
+    Robot.set_value(MTR_R, "velocity_" + MTR_F, value * -1.0)
 
 def teleop():
     while True:
-        if True:
-            Robot.set_value(MOTOR2_ID, "velocity_" + LEFT_MTR, -1.0)
-            Robot.set_value(MOTOR1_ID, "velocity_" + RIGHT_MTR, 1.0)
-        elif Keyboard.get_value(BACK):
-            Robot.set_value(MOTOR2_ID, "velocity_" + LEFT_MTR, 1.0)
-            Robot.set_value(MOTOR1_ID, "velocity_" + RIGHT_MTR, -1.0)
-        elif Keyboard.get_value(LEFT):
-            Robot.set_value(MOTOR1_ID, "velocity_" + LEFT_MTR, 1.0)
-            Robot.set_value(MOTOR2_ID, "velocity_" + RIGHT_MTR, -1.0)
-        elif Keyboard.get_value(RIGHT):
-            Robot.set_value(MOTOR1_ID, "velocity_" + LEFT_MTR, -1.0)
-            Robot.set_value(MOTOR2_ID, "velocity_" + RIGHT_MTR, 1.0)
+        apply_z_velocity(Gamepad.get_value("joystick_left_y"))
+        apply_x_velocity(Gamepad.get_value("joystick_left_x"))
