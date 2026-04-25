@@ -32,23 +32,6 @@ def move_arm(speed):
     
     Robot.set_value(arm, "velocity_b", speed + base)
 
-def calibrate_claw():
-    while True:
-        Robot.set_value(claw, "servo1", 90.0)
-        Robot.sleep(2)
-        Robot.set_value(claw, "servo1", 0.0)
-        Robot.sleep(2)
-
-def calibrate():
-    Robot.set_value(m_f, fl_wheel, 1)
-    Robot.sleep(3)
-    Robot.set_value(m_f, fr_wheel, 1)
-    Robot.sleep(3)
-    Robot.set_value(m_b, bl_wheel, 1)
-    Robot.sleep(3)
-    Robot.set_value(m_b, br_wheel, 1)
-    Robot.sleep(3)
-
 """
 def linefollowmode():
     while Robot.get_value(line, "center") >= 0.6:
@@ -57,17 +40,14 @@ def linefollowmode():
 """
 
 def autonomous():
-    calibrate2()
 
 def teleop():
     while True:
         servo = 0.0
-        rotation = Gamepad.get_value("r_trigger") - Gamepad.get_value("l_trigger")
-        #move_arm(Gamepad.get_value("joystick_right_y") * 0.24)
+        move_arm(Gamepad.get_value("joystick_right_y") * 0.24)
         if Gamepad.get_value("button_a") and servo > 0:
             servo -= 1
-        if not Gamepad.get_value("button_a") and servo < 180:
+        if Gamepad.get_value("button_b") and servo < 180:
             servo += 1
         Robot.set_value(claw, "servo1", servo)
-        #drive(Gamepad.get_value("joystick_left_x"), Gamepad.get_value("joystick_left_y") * -1.0, rotation, 1.0)
         drive(Gamepad.get_value("joystick_right_x") * 0.6, Gamepad.get_value("joystick_left_y") * -1.0, 0, 1.0)
