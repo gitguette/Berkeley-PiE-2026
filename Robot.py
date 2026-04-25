@@ -24,30 +24,48 @@ def drive(x, y, r, s):
     Robot.set_value(m_b, bl_wheel, motors[2])
     Robot.set_value(m_b, br_wheel, motors[3])
 
-def move_arm(speed):
-    Robot.set_value(arm, "pid_enabled_b", False)
-    Robot.set_value(arm, "deadband_b", 0.0)
+def move_arm(speed, powermode):
+    Robot.set_value(arm, "pid_enabled_a", False)
+    Robot.set_value(arm, "deadband_a", 0.0)
     # Needed to hold the arm up
-    base = -0.1
+    base = -0.0002
+    
+    if powermode:
+        base *= 3
+        speed *= 3
     
     Robot.set_value(arm, "velocity_b", speed + base)
 
-"""
+
 def linefollowmode():
-    while Robot.get_value(line, "center") >= 0.6:
-        drive(0, 1, 0, 1)
-    while Robot.get_value(line, "center") < 0.6:
-"""
+    while True:
+        while Robot.get_value(line, "center") >= 0.6:
+            drive(0, 1, 0, 1)
+        while Robot.get_value(line, "center") < 0.6:
+            if Robot.get_value(line, "left") < 0.3 and Robot.get_value(line, "right") < 0.3:
+                while True:
+                    drive(0, 0, 0, 0)
+            if Robot.get_value(line, "left") > Robot.get_value(line, "right"):
+                drive(0.3, 0, 0, 1)
+            else:
+                drive(-0.3, 0, 0, 1)
+
 
 def autonomous():
+    linefollowmode()
 
 def teleop():
+    servo = -1.0
     while True:
+        if Gamepad.get_value("r_bumper"):
+            powermode = True
+        else:
+            arm_mult = False
         servo = 0.0
-        move_arm(Gamepad.get_value("joystick_right_y") * 0.24)
-        if Gamepad.get_value("button_a") and servo > 0:
-            servo -= 1
-        if Gamepad.get_value("button_b") and servo < 180:
-            servo += 1
+        move_arm(Gamepad.get_value("joystick_right_y"), powermode)
+        if Gamepad.get_value("r_trigger"):
+            servo = 0
+        else:
+            servo = 1
         Robot.set_value(claw, "servo1", servo)
         drive(Gamepad.get_value("joystick_right_x") * 0.6, Gamepad.get_value("joystick_left_y") * -1.0, 0, 1.0)
