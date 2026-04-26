@@ -30,7 +30,7 @@ def move_arm(speed, powermode):
     Robot.set_value(arm, "pid_enabled_a", False)
     Robot.set_value(arm, "deadband_a", 0.0)
     # Needed to hold the arm up
-    base = -0.0001
+    base = -0.000005
     
     if powermode:
         base *= 3
@@ -48,22 +48,51 @@ def calibrate():
     Robot.set_value(m_b, br_wheel, 1.0)
     Robot.sleep(5)
 
+def calibrate_claw():
+    Robot.set_value(claw, "servo1", 0.0)
+    Robot.sleep(3)
+    Robot.set_value(claw, "servo1", 0.5)
+    Robot.sleep(3)
+    Robot.set_value(claw, "servo1", 1.0)
+    Robot.sleep(3)
+    Robot.set_value(claw, "servo1", -1.0)
+    Robot.sleep(3)
+
+def linefollowmode():
+    l = Robot.get_value(line, "left")
+    r = Robot.get_value(line, "right")
+    c = Robot.get_value(line, "center")
+    
+    while l > 0.3 or r > 0.3 or c > 0.3:
+        diff = -0.4 * (l - r)
+        drive(0, 0.3, diff, 1)
+    
+    drive(0, 0, 0, 0)
+
 def autonomous():
-    calibrate()
-#    linefollowmode()
+    linefollowmode()
 
 def teleop():
-    servo = -1.0
+    servo = 0.5
     while True:
-        rotation = 0.3 * (Gamepad.get_value("r_trigger") - Gamepad.get_value("l_trigger"))
+        if Gamepad.get_value("button_start"):
+            Robot.set_value(arm, "velocity_b", 0)
+            Robot.sleep(1)
+            continue
+        speedmult = 1.0
+        if Gamepad.get_value("l_bumper"):
+            speedmult = 0.5
         powermode = False
         if Gamepad.get_value("r_bumper"):
             powermode = True
-        servo = 0.0
-        #move_arm(Gamepad.get_value("joystick_right_y") * 0.1, powermode)
+        if Gamepad.get_value("button_a") and servo > -1.0:
+            servo -= 0.001
+        elif servo < 1.0:
+            servo += 0.001
+        move_arm(Gamepad.get_value("joystick_right_y") * 0.1, powermode)
         #if Gamepad.get_value("r_trigger"):
         #    servo = 0
         #else:
         #    servo = 1
-        #Robot.set_value(claw, "servo1", servo)
-        drive(Gamepad.get_value("joystick_left_x") * 0.6, Gamepad.get_value("joystick_left_y") * -1.0, rotation, 1.0)
+        Robot.set_value(claw, "servo1", servo)
+        drive(Gamepad.get_value("joystick_left_x"), Gamepad.get_value("joystick_left_y") * -1.0, Gamepad.get_value("joystick_right_x"), speedmult)
